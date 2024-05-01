@@ -10,8 +10,42 @@ const { errorResponder, errorTypes } = require('../../../core/errors');
  */
 async function getUsers(request, response, next) {
   try {
-    const users = await usersService.getUsers();
-    return response.status(200).json(users);
+    const {
+      page_number = 1,
+      page_size = 10,
+      sort = 'email:asc',
+      search,
+    } = request.query;
+
+    // Parse sorting parameters
+    let sortField = 'email';
+    let sortOrder = 'asc';
+    if (sort) {
+      [sortField, sortOrder] = sort.split(':');
+      sortOrder = sortOrder || 'asc'; // default to ascending if not specified
+    }
+
+    // Call to service layer with all parameters
+    const result = await usersService.getUsers({
+      page_number: parseInt(page_number),
+      page_size: parseInt(page_size),
+      sortField,
+      sortOrder,
+      search,
+    });
+
+    // Ensure result is formatted correctly according to the new response schema
+    const totalPages = Math.ceil(result.total / page_size);
+    const responsePayload = {
+      page_number: parseInt(page_number),
+      page_size: parseInt(page_size),
+      total_pages: totalPages,
+      has_previous_page: parseInt(page_number) > 1,
+      has_next_page: parseInt(page_number) < totalPages,
+      data: result.data,
+    };
+
+    return response.status(200).json(responsePayload);
   } catch (error) {
     return next(error);
   }

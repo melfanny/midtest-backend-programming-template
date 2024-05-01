@@ -2,23 +2,37 @@ const usersRepository = require('./users-repository');
 const { hashPassword, passwordMatched } = require('../../../utils/password');
 
 /**
- * Get list of users
+ * Get list of users with paginat, sort, and search
+ * @param {number} page - page
+ * @param {number} limit - page size
+ * @param {string} sort - sort
+ * @param {string} search -search
  * @returns {Array}
  */
-async function getUsers() {
-  const users = await usersRepository.getUsers();
+async function getUsers({
+  page_number = 1,
+  page_size = 10,
+  sort = 'email:asc',
+  search = '',
+}) {
+  const options = {
+    page: parseInt(page_number, 10),
+    limit: parseInt(page_size, 10),
+    sort: parseSort(sort),
+    search: parseSearch(search),
+  };
+  return usersRepository.getUsers(options);
+}
 
-  const results = [];
-  for (let i = 0; i < users.length; i += 1) {
-    const user = users[i];
-    results.push({
-      id: user.id,
-      name: user.name,
-      email: user.email,
-    });
-  }
+function parseSort(sort) {
+  const [field, order] = sort.split(':');
+  return { [field]: order === 'desc' ? -1 : 1 };
+}
 
-  return results;
+function parseSearch(search) {
+  if (!search) return {};
+  const [field, keyword] = search.split(':');
+  return { [field]: new RegExp(keyword, 'i') }; // 'i' for case-insensitive
 }
 
 /**

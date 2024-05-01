@@ -1,11 +1,30 @@
 const { User } = require('../../../models');
 
 /**
- * Get a list of users
+ * Get a list of users with paginat, sort, and search
+ * @param {number} page - page
+ * @param {number} limit - page size
+ * @param {string} sort - sort
+ * @param {string} search -search
  * @returns {Promise}
  */
-async function getUsers() {
-  return User.find({});
+async function getUsers({ page, limit, sort, search }) {
+  const query = User.find(search);
+  const total = await User.countDocuments(search);
+  const data = await query
+    .sort(sort)
+    .skip((page - 1) * limit)
+    .limit(limit)
+    .exec();
+
+  return {
+    page_number: page,
+    page_size: limit,
+    total_pages: Math.ceil(total / limit),
+    has_previous_page: page > 1,
+    has_next_page: page < Math.ceil(total / limit),
+    data,
+  };
 }
 
 /**
