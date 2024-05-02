@@ -2,6 +2,40 @@ const authenticationRepository = require('./authentication-repository');
 const { generateToken } = require('../../../utils/session-token');
 const { passwordMatched } = require('../../../utils/password');
 
+const loginAttempts = {};
+
+/**
+ * Check manage login attempt
+ * @param {string} email - Email
+ * @param {boolean} Reset - Reset locktime
+ * @returns {object}
+ */
+function manageLoginAttempts(email, reset = false) {
+  const maxAttempts = 5;
+  const lockoutTime = 30 * 60 * 1000; // 30 minutes
+
+  if (reset) {
+    // reset jika sudah berhasil login dengan bener
+    if (loginAttempts[email]) {
+      clearTimeout(loginAttempts[email].timer);
+      delete loginAttempts[email];
+    }
+    return;
+  }
+
+  // menghitung kegagalan login
+  if (!loginAttempts[email]) {
+    loginAttempts[email] = {
+      count: 1,
+      timer: setTimeout(() => delete loginAttempts[email], lockoutTime),
+    };
+  } else {
+    loginAttempts[email].count++;
+  }
+
+  return loginAttempts[email].count >= maxAttempts;
+}
+
 /**
  * Check username and password for login.
  * @param {string} email - Email
@@ -33,6 +67,8 @@ async function checkLoginCredentials(email, password) {
   return null;
 }
 
+//menambahkan module manageLoginAttempts
 module.exports = {
   checkLoginCredentials,
+  manageLoginAttempts,
 };

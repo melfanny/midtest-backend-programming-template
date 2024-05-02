@@ -12,6 +12,16 @@ async function login(request, response, next) {
   const { email, password } = request.body;
 
   try {
+    // cek apakah login sudah 5 kali
+    const attempts = authenticationServices.manageLoginAttempts(email);
+    if (attempts) {
+      // jika sudah munculah error 403 terlalu banyak percobaan
+      return response.status(403).json({
+        error:
+          'Wrong email or password Attempt : 5. Limit reached, cobalagi 30 menit berikutnya',
+        attempts: attempts.count,
+      });
+    }
     // Check login credentials
     const loginSuccess = await authenticationServices.checkLoginCredentials(
       email,
@@ -19,15 +29,20 @@ async function login(request, response, next) {
     );
 
     if (!loginSuccess) {
+      const Attempt = authenticationServices.manageLoginAttempts(email);
       throw errorResponder(
-        errorTypes.INVALID_CREDENTIALS,
-        'Wrong email or password'
+        errorTypes.FORBIDDEN,
+        `Wrong email or password Attempt: ${Attempt.count} `
       );
     }
 
     return response.status(200).json(loginSuccess);
   } catch (error) {
-    return next(error);
+    if (error.message.includes('Too many failed')) {
+      return response.status(403).json({ error: error.message, attempts: 5 });
+    } else {
+      return next(error);
+    }
   }
 }
 
