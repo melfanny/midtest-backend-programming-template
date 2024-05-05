@@ -9,8 +9,8 @@ async function getClients() {
 }
 
 /**
- * Get user detail
- * @param {string} id - User ID
+ * Get client detail
+ * @param {string} id - client ID
  * @returns {Promise}
  */
 async function getClient(id) {
@@ -37,7 +37,7 @@ async function createClient(name, email, pin, cardtype, cardnumber) {
 }
 
 /**
- * Get user by email to prevent duplicate email
+ * Get client by email to prevent duplicate email
  * @param {string} email - Email
  * @returns {Promise}
  */
@@ -45,9 +45,41 @@ async function getClientByEmail(email) {
   return Client.findOne({ email });
 }
 
+/**
+ * Update existing client
+ * @param {string} id - client ID
+ * @param {string} name - Name
+ * @param {string} email - Email
+ * @returns {Promise}
+ */
+async function updateClient(id, name, email) {
+  return Client.updateOne(
+    {
+      _id: id,
+    },
+    {
+      $set: {
+        name,
+        email,
+      },
+    }
+  );
+}
+
+/**
+ * Delete a client
+ * @param {string} id - client ID
+ * @returns {Promise}
+ */
+async function deleteClient(id) {
+  return Client.deleteOne({ _id: id });
+}
+
 module.exports = {
   getClients,
   getClient,
   createClient,
   getClientByEmail,
+  updateClient,
+  deleteClient,
 };

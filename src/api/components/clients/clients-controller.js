@@ -39,7 +39,7 @@ async function getClient(request, response, next) {
 }
 
 /**
- * Handle create user request
+ * Handle create client request
  * @param {object} request - Express request object
  * @param {object} response - Express response object
  * @param {object} next - Express route middlewares
@@ -72,7 +72,7 @@ async function createClient(request, response, next) {
     if (!success) {
       throw errorResponder(
         errorTypes.UNPROCESSABLE_ENTITY,
-        'Failed to create user'
+        'Failed to create client'
       );
     }
 
@@ -82,8 +82,73 @@ async function createClient(request, response, next) {
   }
 }
 
+/**
+ * Handle update client request
+ * @param {object} request - Express request object
+ * @param {object} response - Express response object
+ * @param {object} next - Express route middlewares
+ * @returns {object} Response object or pass an error to the next route
+ */
+async function updateClient(request, response, next) {
+  try {
+    const id = request.params.id;
+    const name = request.body.name;
+    const email = request.body.email;
+
+    // Email must be unique
+    const emailIsRegistered = await clientsService.emailIsRegistered(email);
+    if (emailIsRegistered) {
+      throw errorResponder(
+        errorTypes.EMAIL_ALREADY_TAKEN,
+        'Email is already registered'
+      );
+    }
+
+    const success = await clientsService.updateClient(id, name, email);
+    if (!success) {
+      throw errorResponder(
+        errorTypes.UNPROCESSABLE_ENTITY,
+        'Failed to update client'
+      );
+    }
+
+    return response
+      .status(200)
+      .json({ id, name, email, message: 'client telah terupdate' });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+/**
+ * Handle delete client request
+ * @param {object} request - Express request object
+ * @param {object} response - Express response object
+ * @param {object} next - Express route middlewares
+ * @returns {object} Response object or pass an error to the next route
+ */
+async function deleteClient(request, response, next) {
+  try {
+    const id = request.params.id;
+
+    const success = await clientsService.deleteClient(id);
+    if (!success) {
+      throw errorResponder(
+        errorTypes.UNPROCESSABLE_ENTITY,
+        'Failed to delete client'
+      );
+    }
+
+    return response.status(200).json({ id, message: 'client telah terhapus' });
+  } catch (error) {
+    return next(error);
+  }
+}
+
 module.exports = {
   getClients,
   getClient,
   createClient,
+  updateClient,
+  deleteClient,
 };

@@ -23,14 +23,14 @@ async function getClients() {
 }
 
 /**
- * Get user detail
- * @param {string} id - User ID
+ * Get client detail
+ * @param {string} id - client ID
  * @returns {Object}
  */
 async function getClient(id) {
   const client = await clientsRepository.getClient(id);
 
-  // User not found
+  // client not found
   if (!client) {
     return null;
   }
@@ -87,9 +87,57 @@ async function emailIsRegistered(email) {
   return false;
 }
 
+/**
+ * Update existing client
+ * @param {string} id - client ID
+ * @param {string} name - Name
+ * @param {string} email - Email
+ * @returns {boolean}
+ */
+async function updateClient(id, name, email) {
+  const client = await clientsRepository.getClient(id);
+
+  // client not found
+  if (!client) {
+    return null;
+  }
+
+  try {
+    await clientsRepository.updateClient(id, name, email);
+  } catch (err) {
+    return null;
+  }
+
+  return true;
+}
+
+/**
+ * Delete client
+ * @param {string} id - client ID
+ * @returns {boolean}
+ */
+async function deleteClient(id) {
+  const client = await clientsRepository.getClient(id);
+
+  // client not found
+  if (!client) {
+    return null;
+  }
+
+  try {
+    await clientsRepository.deleteClient(id);
+  } catch (err) {
+    return null;
+  }
+
+  return true;
+}
+
 module.exports = {
   getClients,
   getClient,
   createClient,
   emailIsRegistered,
+  updateClient,
+  deleteClient,
 };

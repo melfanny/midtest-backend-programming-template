@@ -10,19 +10,34 @@ const route = express.Router();
 module.exports = (app) => {
   app.use('/clients', route);
 
-  // Get list of users
+  // Get list of client
   route.get('/', authenticationMiddleware, clientsController.getClients);
 
-  // Create user
+  // Create client
   route.post(
     '/',
     authenticationMiddleware,
-    clientsValidator.createUser,
+    clientsValidator.createClient,
     clientsController.createClient
   );
 
-  // Get user detail
+  // Get client detail
   route.get('/:id', authenticationMiddleware, clientsController.getClient);
+
+  // Update client
+  route.put(
+    '/:id',
+    authenticationMiddleware,
+    clientsValidator.updateClient,
+    clientsController.updateClient
+  );
+
+  // Delete client
+  route.delete(
+    '/:id',
+    authenticationMiddleware,
+    clientsController.deleteClient
+  );
 
   app.use(errors());
 };

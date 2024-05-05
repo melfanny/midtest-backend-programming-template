@@ -1,6 +1,7 @@
 const { celebrate, Segments, Joi } = require('celebrate');
+const { createClient } = require('./clients-repository');
 
-const createUserValidator = Joi.object({
+const createClientValidator = Joi.object({
   name: Joi.string().required().label('Name'),
   email: Joi.string().email().required().label('Email'),
   pin: Joi.string().required().label('Pin'),
@@ -8,8 +9,16 @@ const createUserValidator = Joi.object({
   cardnumber: Joi.number().required().label('Cardnumber'),
 });
 
+const updateClientValidator = Joi.object({
+  name: Joi.string().required().label('Name'),
+  email: Joi.string().email().required().label('Email'),
+});
+
 module.exports = {
-  createUser: celebrate({
-    [Segments.BODY]: createUserValidator,
+  createClient: celebrate({
+    [Segments.BODY]: createClientValidator,
+  }),
+  updateClient: celebrate({
+    [Segments.BODY]: updateClientValidator,
   }),
 };
